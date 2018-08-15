@@ -147,3 +147,38 @@ def many_to_many_select(request):
         """
 ```
 
+### 三.自定义管理器:一般用于查询,过滤掉软删除的数据
+
+我们前面都是直接使用的默认的管理器objects,但是在实际开发中,我们可能会将获取到的数据提前进行过滤,所以就需要我们自定义管理器来实现.
+
+首先定义个一个管理器的子类
+
+```
+class StudentsManager(models.manager):
+	def get_queryset(self):
+	# 过滤掉软删除的数据
+	return super(StudentsManager,self).get_queryset().filter(isDelete=False)
+```
+
+然后在我们自定义的模型中使用管理器
+
+```
+class Student(models.Model):
+	stuObject = StudentsManager()
+    s_name = models.CharField(max_length=10, unique=True)
+    s_age = models.IntegerField(default=16)
+    s_sex = models.BooleanField(default=1)
+    operator_time = models.DateTimeField(auto_now=True)
+    create_time = models.DateTimeField(auto_now_add=True, null=True)
+    yuwen = models.DecimalField(max_digits=3, decimal_places=1, default=60)
+    shuxue = models.DecimalField(max_digits=3, decimal_places=1, default=60)
+    # 学生与班级 多对一
+    g = models.ForeignKey(Grade, null=True, related_name="test")
+```
+
+在实际使用
+
+```
+Student.stuOject.all()  # 这样获取到的数据就是提前过滤后的
+```
+
